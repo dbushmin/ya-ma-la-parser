@@ -37,7 +37,7 @@ class YML {
             $value = $item['value'];
             $attributes = $item['attributes'];
             if (!is_array($value)) {
-                $method = 'set'.$this->camelize($field);
+                $method = 'set'.self::camelize($field);
                 if (method_exists($shop, $method)) {
                     call_user_func([$shop, $method], $value);
                 }
@@ -75,7 +75,7 @@ class YML {
                 $category = new Category();
                 $category->setName($item['value']);
                 foreach ($item['attributes'] as $attr_name => $attr_value) {
-                    $method = 'set'.$this->camelize($attr_name);
+                    $method = 'set'.self::camelize($attr_name);
                     if (method_exists($category, $method)) {
                         call_user_func([$category, $method], $attr_value);
                     }
@@ -96,8 +96,8 @@ class YML {
                 $currency = new Currency();
                 foreach ($item['attributes'] as $attr_name => $attr_value) {
                     if ($attr_name === 'id')
-                        $attr_value = $this->fixCurrency($attr_value);
-                    $method = 'set'.$this->camelize($attr_name);
+                        $attr_value = self::fixCurrency($attr_value);
+                    $method = 'set'.self::camelize($attr_name);
                     if (method_exists($currency, $method)) {
                         call_user_func([$currency, $method], $attr_value);
                     }
@@ -116,7 +116,7 @@ class YML {
             foreach ($list as $item) {
                 $delivery_option = new DeliveryOption();
                 foreach ($item['attributes'] as $attr_name => $attr_value) {
-                    $method = 'set'.$this->camelize($attr_name);
+                    $method = 'set'.self::camelize($attr_name);
                     if (method_exists($delivery_option, $method)) {
                         call_user_func([$delivery_option, $method], $attr_value);
                     }
@@ -130,7 +130,7 @@ class YML {
      * @param Shop $shop
      * @param array $list
      */
-    protected function fill_offers(Shop $shop, $list = []) {
+    public function fill_offers(Shop $shop, $list = []) {
         if (is_array($list)) {
             foreach ($list as $item) {
                 /**
@@ -177,7 +177,7 @@ class YML {
                  * проставляем атрибуты
                  */
                 foreach ($item['attributes'] as $attr_name => $attr_value) {
-                    $method = 'set'.$this->camelize($attr_name);
+                    $method = 'set'.self::camelize($attr_name);
                     if (method_exists($offer, $method)) {
                         call_user_func([$offer, $method], $attr_value);
                     }
@@ -191,7 +191,7 @@ class YML {
                     $value = $sub_item['value'];
                     $attributes = $sub_item['attributes'];
                     if (!is_array($value) && !in_array($field, Offer::$offer_properties_as_array)) {
-                        $method = 'set' . $this->camelize($field);
+                        $method = 'set' . self::camelize($field);
                         if (method_exists($offer, $method)) {
                             call_user_func([$offer, $method], $value);
                         }
@@ -215,7 +215,7 @@ class YML {
                                 foreach ($value[0]['attributes'] as $attr_name => $attr_value) {
                                     /** @var DeliveryOption $delivery_option */
                                     $delivery_option = new DeliveryOption();
-                                    $method = 'set'.$this->camelize($attr_name);
+                                    $method = 'set'.self::camelize($attr_name);
                                     if (method_exists($delivery_option, $method)) {
                                         call_user_func([$delivery_option, $method], $attr_value);
                                     }
@@ -226,7 +226,7 @@ class YML {
                                 foreach ($value[0]['attributes'] as $attr_name => $attr_value) {
                                     /** @var Offer\Outlet $outlet */
                                     $outlet = new Offer\Outlet();
-                                    $method = 'set'.$this->camelize($attr_name);
+                                    $method = 'set'.self::camelize($attr_name);
                                     if (method_exists($outlet, $method)) {
                                         call_user_func([$outlet, $method], $attr_value);
                                     }
@@ -247,7 +247,7 @@ class YML {
      * @param $field
      * @return string
      */
-    private function camelize($field) {
+    public static function camelize($field) {
         return strtr(ucwords(strtr($field, array('_' => ' ', '-' => ' ', '.' => '_ '))), array(' ' => ''));
     }
 
@@ -255,7 +255,7 @@ class YML {
      * @param $id
      * @return string
      */
-    private function fixCurrency($id) {
+    public static function fixCurrency($id) {
         $id = strtoupper($id);
         if ('RUR' === $id) {
             $id = 'RUB';
