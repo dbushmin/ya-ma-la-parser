@@ -65,6 +65,79 @@ class YML {
     }
 
     /**
+     * @param $yml_file
+     * @return Shop
+     */
+    public function parts_yml_parser($yml_file)
+    {
+
+        $shop = new Shop();
+
+        $fp = fopen($yml_file, "r");
+
+        $yml_part = "";
+        while (!feof($fp) and $fp) {
+            $symbol = fgetc($fp);
+            $yml_part .= $symbol;
+
+            if ($symbol == '>' && (preg_match('/\<shop\>/', $yml_part) || preg_match('/\<offers\>/', $yml_part))) {
+                $yml_part = '';
+                continue;
+            }
+
+            if ($symbol != '>' || (
+                    !preg_match('/\<\/currencies\>$/', $yml_part) &&
+                    !preg_match('/\<\/categories\>$/', $yml_part) &&
+                    !preg_match('/\<\/offer\>$/', $yml_part)
+                )
+            ) {
+                continue;
+            }
+
+
+            if (preg_match('/\<\/offer\>$/', $yml_part))
+                $yml_part = '<data><offers>' . $yml_part . '</offers></data>';
+            else
+                $yml_part = '<data>' . $yml_part . '</data>';
+            $data = $this->reader->parse($yml_part);
+
+            foreach ($data as $item) {
+                $field = preg_replace('/[\{\}]+/', '', $item['name']);
+                $value = $item['value'];
+                $attributes = $item['attributes'];
+                if (!is_array($value)) {
+                    $method = 'set' . self::camelize($field);
+                    if (method_exists($shop, $method)) {
+                        call_user_func([$shop, $method], $value);
+                    }
+                } else {
+                    switch ($field) {
+                        case 'categories':
+                            $this->fill_categories($shop, $value);
+                            break;
+                        case 'currencies':
+                            $this->fill_currencies($shop, $value);
+                            break;
+                        case 'delivery-options':
+                            $this->fill_delivery_options($shop, $value);
+                            break;
+                        case 'offers':
+                            $this->fill_offers($shop, $value);
+                            break;
+                        default:
+                    }
+                }
+
+                // if (count($attributes) > 0) // ToDo: придумать что делать в случае, когда имеются атрибуты
+            }
+            $yml_part = "";
+        }
+        fclose($fp);
+
+        return $shop;
+    }
+
+    /**
      * @param Shop $shop
      * @param array $list
      */
